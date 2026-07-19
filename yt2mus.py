@@ -38,8 +38,15 @@ class MusicDownloader:
         termux_packages = ['python', 'mpv', 'yt-dlp', 'ffmpeg']
         python_modules = ['youtube-search', 'colorama']
 
+        # Проверка Termux-пакетов (исправлено для Termux)
         for pkg in termux_packages:
-            if subprocess.run(['command', '-v', pkg], capture_output=True).returncode != 0:
+            try:
+                result = subprocess.run(['which', pkg], capture_output=True, text=True)
+                if result.returncode != 0:
+                    print(f"{Fore.YELLOW}Устанавливаю {pkg}...{Style.RESET_ALL}")
+                    subprocess.run(['pkg', 'install', pkg, '-y'], check=True)
+            except Exception:
+                # Fallback
                 print(f"{Fore.YELLOW}Устанавливаю {pkg}...{Style.RESET_ALL}")
                 subprocess.run(['pkg', 'install', pkg, '-y'], check=True)
 
@@ -47,7 +54,7 @@ class MusicDownloader:
             try:
                 __import__(module)
             except ImportError:
-                print(f"{Fore.YELLOW}Устанавливаю {module}...{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}Устанавливаю Python-модуль {module}...{Style.RESET_ALL}")
                 subprocess.run([sys.executable, '-m', 'pip', 'install', module], check=True)
 
         # yt-dlp
@@ -57,11 +64,11 @@ class MusicDownloader:
             subprocess.run([sys.executable, '-m', 'pip', 'install', 'yt-dlp', '--upgrade'], check=True)
 
         # Обновляем yt-dlp
-        print(f"{Fore.YELLOW}Обновляем yt-dlp...{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}Обновляем yt-dlp до последней версии...{Style.RESET_ALL}")
         subprocess.run([sys.executable, '-m', 'pip', 'install', 'yt-dlp', '--upgrade'], check=True)
 
         DEP_FLAG.touch()
-        print(f"{Fore.GREEN}Зависимости успешно установлены!{Style.RESET_ALL}\n")
+        print(f"{Fore.GREEN}✅ Зависимости успешно установлены!{Style.RESET_ALL}\n")
 
     def search_tracks(self, query: str, page: int = 1, limit: int = 20):
         from youtube_search import YoutubeSearch
